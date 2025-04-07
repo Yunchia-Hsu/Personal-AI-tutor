@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>My Best English Tutor</title>
+    <style>
+        /* 使整個頁面置中，並設定預設字型 */
+        body {
+            margin: 0;
+            padding: 0;
+            text-align: center;  /* 讓頂層標題/容器等置中 */
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5; /* 淡淡的背景色 */
+        }
+
+        /* 容器：控制整體寬度與排版，並與頁面中線對齊 */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fbf5f5; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        /* 標題（預設就會在 body > text-align: center 之下置中） */
+        h1 {
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        /* quiz 區塊：整個區塊在 container 中置中，但內部文字向右對齊 */
+        #quizSection {
+            width: 40%;           /* 自行調整合適寬度 */
+            margin: 0 auto;       /* 讓 quiz 區塊整體置中 */
+            text-align: left;    /* 內文、選項向右對齊 */
+            margin-bottom: 20px;
+        }
+        #quizSection p {
+            margin: 10px 0 5px 0;
+        }
+
+        #quizResult {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* form 區塊：個人學習資訊 */
+        /* 讓所有 label, input 同樣都在容器中置中，但文字向右對齊 */
+        .personal-info {
+            width: 80%;           
+            margin: 0 auto;
+            text-align: left;    /* 內文向右對齊 */
+            margin-bottom: 20px;
+        }
+
+        /* label 與 input 的基本排版 */
+        label {
+            display: inline-block;
+            width: 280px;
+            text-align: left;   /* 文字置右 */
+            margin-bottom: 10px;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        input[type="text"] {
+            width: 45%;
+            font-size: 14px;
+            padding: 5px 8px;
+            margin-bottom: 10px;
+        }
+        input::placeholder {
+            font-size: 14px; /* placeholder字體大小 */
+        }
+
+        /* 按鈕樣式 */
+        button {
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 10px;
+            border: 1px solid #ccc;
+            background-color: #eee;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #d0cfcf;
+        }
+
+        /* 區塊 (AI Suggestions、Practice) 的樣式 */
+        #adviceBox,
+        #practiceBox {
+            border: 1px solid #d7d9d6;
+            padding: 10px;
+            width: 60%;
+            min-height: 100px;
+            margin: 10px auto 20px auto; 
+            background-color: #f6f6f1e5;
+            border-radius: 4px;
+            text-align: center;  /* 內容在方塊內置中 */
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Best English Tutor</h1>
+        
+        <!-- 測驗區塊 -->
+        <h2>Level Test Quiz</h2>
+        <div id="quizSection">
+            <!-- quiz 題目會由 JavaScript 動態載入，題目與選項向右對齊 -->
+        </div>
+        <button onclick="submitQuiz()">Submit Quiz</button>
+        <p id="quizResult"></p>
+        
+        <!-- 建議區塊 -->
+        <h2>Personal Learning info</h2>
+        <div class="personal-info">
+            <label for="level">1. Your English Level:</label>
+            <input type="text" id="level" placeholder="e.g. Entry">
+            <br>
+            
+            <label for="language">2. Reply Language:</label>
+            <input type="text" id="language" placeholder="e.g. 繁體中文">
+            <br>
+            
+            <label for="question">3. Your main concern:</label>
+            <input type="text" id="question" placeholder="e.g. I struggle with vocabulary...">
+            <br>
+            
+            <label for="learningstyle">4. Learning preference:</label>
+            <input type="text" id="learningstyle" placeholder="e.g. take online courses...">
+            <br>
+            
+            <label for="instructor">5. Tutor tone preference:</label>
+            <input type="text" id="instructor" placeholder="e.g. warm and positive...">
+            <br><br>
+
+            <button onclick="getAdvice()">Get Advice</button>
+        </div>
+
+        <h2>AI Suggestions：</h2>
+        <div id="adviceBox"></div>
+
+        <h2>Need Actual Practice?</h2>
+        <button onclick="requestPractice()">Gooooooo ~</button>
+        <div id="practiceBox"></div>
+    </div>
+
+    <script>
+        let quizData = [];
+
+        // 當頁面載入時，從 /get_quiz 取得題目
+        window.onload = async function() {
+            const response = await fetch("/get_quiz");
+            const data = await response.json();
+            quizData = data.quiz;
+            renderQuiz();
+        };
+
+        // 根據 quizData 動態生成 quiz 區塊
+        function renderQuiz() {
+            const quizSection = document.getElementById("quizSection");
+            quizSection.innerHTML = ""; // 清空區塊
+            quizData.forEach((item, index) => {
+                const div = document.createElement("div");
+                div.innerHTML = `<p>${index + 1}. ${item.question}</p>`;
+                item.options.forEach((option, idx) => {
+                    div.innerHTML += `
+                        <input type="radio" name="q${index}" value="${option}" id="q${index}_o${idx}">
+                        <label for="q${index}_o${idx}">${option}</label><br>
+                    `;
+                });
+                quizSection.appendChild(div);
+            });
+        }
+
+        // 提交 quiz 並呼叫 /take_quiz API
+        async function submitQuiz() {
+            const answers = [];
+            for (let i = 0; i < quizData.length; i++) {
+                const selected = document.querySelector(`input[name="q${i}"]:checked`);
+                if (selected) {
+                    answers.push(selected.value);
+                } else {
+                    alert("Please answer all quiz questions.");
+                    return;
+                }
+            }
+            // 呼叫 /take_quiz API 並取得結果
+            const response = await fetch("/take_quiz", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ answers: answers })
+            });
+            const data = await response.json();
+
+            // 顯示分數與等級，並自動填入建議表單的等級欄位
+            document.getElementById("quizResult").innerText = 
+                "Your level is: " + data.level + " (Score: " + data.score + ")";
+            document.getElementById("level").value = data.level;
+            
+            // 紀錄 quiz 互動
+            await logQuizInteraction(answers, data.level, data.score);
+        }
+
+        // 呼叫 /log_interaction 紀錄 quiz 互動
+        async function logQuizInteraction(answers, level, score) {
+            await fetch("/log_interaction", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action_type: "quiz_submit",
+                    data: {
+                        answers: answers,
+                        user_level: level,
+                        score: score
+                    }
+                })
+            });
+        }
+
+        // 取得學習建議
+        async function getAdvice() {
+            const levelInput = document.getElementById("level").value;
+            const questionInput = document.getElementById("question").value;
+            const userlanguage = document.getElementById("language").value;
+            const userlearningstyle = document.getElementById("learningstyle").value;
+            const userinstructorpreference = document.getElementById("instructor").value;
+    
+            const response = await fetch("/get_advice", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    user_level: levelInput,
+                    user_question: questionInput,
+                    user_learningstyle: userlearningstyle,
+                    user_instructor_preference: userinstructorpreference,
+                    user_language: userlanguage
+                })
+            });
+    
+            const data = await response.json();
+            document.getElementById("adviceBox").innerText = data.advice;
+            
+            // 紀錄 advice 互動
+            await logAdviceInteraction(
+                levelInput,
+                questionInput,
+                userlearningstyle,
+                userinstructorpreference,
+                userlanguage
+            );
+        }
+
+        // 專門負責把建議的互動記錄到 /log_interaction 的函式
+        async function logAdviceInteraction(level, question, learningstyle, instructorPreference, language) {
+            await fetch("/log_interaction", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action_type: "advice_request",
+                    data: {
+                        user_level: level,
+                        user_question: question,
+                        user_learningstyle: learningstyle,
+                        user_instructor_preference: instructorPreference,
+                        user_language: language
+                    }
+                })
+            });
+        }
+
+        async function requestPractice() {
+            const level = document.getElementById("level").value;
+            const learningstyle = document.getElementById("learningstyle").value;
+            
+            const response = await fetch("/get_practice", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    user_level: level,
+                    user_learningstyle: learningstyle
+                })
+            });
+            const data = await response.json();
+            document.getElementById("practiceBox").innerText = data.practice || "No practice generated.";
+        }
+
+    </script>
+</body>
+</html>

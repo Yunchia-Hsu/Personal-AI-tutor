@@ -1,0 +1,36 @@
+{
+    "quiz": [
+        {
+            "question": "請問 'candy' 在中文是什麼？",
+            "options": ["糖果", "香蕉"],
+            "answer": "糖果"
+        },
+        {
+            "question": "請問 'ubiquitous' 在中文是什麼？",
+            "options": ["毫無防備的", "無所不在的"],
+            "answer": "無所不在的"
+        },
+        {
+            "question": "請問 'confident' 在中文是什麼？",
+            "options": ["有自信的", "沮喪的"],
+            "answer": "有自信的"
+        },
+        {
+            "question": "Mark ___ running yesterday.",
+            "options": ["went", "go", "goed"],
+            "answer": "went"
+        }
+        ,
+        {
+            "question": "He ___ here since Monday.",
+            "options": ["is", "has been", "was"],
+            "answer": "has been"
+        }
+        ,
+        {
+            "question": "Had he known about the traffic, he ___ earlier.",
+            "options": ["would have left", "will leave", "would leave"],
+            "answer": "would have left"
+        }
+    ]
+}

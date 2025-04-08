@@ -83,4 +83,3 @@ The server will start at http://0.0.0.0:5001 (or localhost:5001) by default.
 
 - Multi-language Interface: Support more languages to appeal to English learners worldwide.
 
->>>>>>> b7cd1ec (added readme)

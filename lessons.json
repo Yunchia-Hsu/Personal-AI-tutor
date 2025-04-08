@@ -1,19 +1,19 @@
 {
     "quiz": [
         {
-            "question": "請問 'candy' 在中文是什麼？",
-            "options": ["糖果", "香蕉"],
-            "answer": "糖果"
+            "question": "My　　　hurts so much that I cannot even turn my head",
+            "options": ["arm ", "desk"],
+            "answer": "arm"
         },
         {
-            "question": "請問 'ubiquitous' 在中文是什麼？",
-            "options": ["毫無防備的", "無所不在的"],
-            "answer": "無所不在的"
+            "question": "Tomorrow is Sam’s last day in the office. Nobody knows why he decided to　　　.",
+            "options": ["am", "leave"],
+            "answer": "leave"
         },
         {
-            "question": "請問 'confident' 在中文是什麼？",
-            "options": ["有自信的", "沮喪的"],
-            "answer": "有自信的"
+            "question": "Racist remarks are by nature ______ and hurtful, and should be avoided on all occasions.",
+            "options": ["offensive", "stubborn"],
+            "answer": "offensive"
         },
         {
             "question": "Mark ___ running yesterday.",

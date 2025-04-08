@@ -1,7 +1,7 @@
 
 
 # MY-Best-AI-tutor
-An language learning platform that integrates frontend web technologies with backend AI, using GPT-4o to deliver personalized learning advice, level assessments, and automatically generated practice materials, helping users effectively improve their English proficiency. 
+A language learning platform that integrates frontend web technologies with backend AI, using GPT-4o to deliver personalized learning advice, level assessments, and automatically generated practice materials, helping users effectively improve their English proficiency. 
 
 ## 1. Project Overview 
 ### Core Features

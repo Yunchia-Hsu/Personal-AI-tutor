@@ -146,8 +146,8 @@
         <h2>AI Suggestions：</h2>
         <div id="adviceBox"></div>
 
-        <h2>Need Actual Practice?</h2>
-        <button onclick="requestPractice()">Gooooooo ~</button>
+        <h2>Need Actual Practices?</h2>
+        <button onclick="requestPractice()">Goooo ~</button>
         <div id="practiceBox"></div>
     </div>
 
@@ -278,17 +278,40 @@
         async function requestPractice() {
             const level = document.getElementById("level").value;
             const learningstyle = document.getElementById("learningstyle").value;
-            
-            const response = await fetch("/get_practice", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    user_level: level,
-                    user_learningstyle: learningstyle
-                })
-            });
-            const data = await response.json();
-            document.getElementById("practiceBox").innerText = data.practice || "No practice generated.";
+            const userinstructorpreference = document.getElementById("instructor").value;
+            const questionInput = document.getElementById("question").value;
+
+            // const response = await fetch("/get_practice", {
+            //     method: "POST",
+            //     headers: { "Content-Type": "application/json" },
+            //     body: JSON.stringify({
+            //         user_level: level,
+            //         user_learningstyle: learningstyle,
+            //         user_instructor_preference: userinstructorpreference,
+            //         user_question: questionInput
+            //     })
+            // });
+            // const data = await response.json();
+            // document.getElementById("practiceBox").innerText = data.practice || "No practice generated.";
+            try {
+                const response = await fetch("/get_practice", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        user_level: level,
+                        user_learningstyle: learningstyle,
+                        user_instructor_preference: userinstructorpreference,
+                        user_question: questionInput
+                    })
+                });
+                
+                const data = await response.json();
+                console.log("Practice API response:", data);
+                document.getElementById("practiceBox").innerText = data.practice || "No practice generated.";
+            } catch (error) {
+                console.error("Error in requestPractice:", error);
+                document.getElementById("practiceBox").innerText = "Error fetching practice data.";
+            }
         }
 
     </script>

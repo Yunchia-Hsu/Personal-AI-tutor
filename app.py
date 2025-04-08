@@ -148,7 +148,7 @@ please list your reply or even with emojis.
 
     # 呼叫 OpenAI GPT API (gpt-3.5-turbo)
     response = client.chat.completions.create(model="gpt-4o",
-    messages=[{"role": "system", "content": "You are a multilingual tutor who can reply in any language."},
+    messages=[{"role": "system", "content": "You are the best English tutor who can reply in any language and help students to learn English well."},
               {"role": "user", "content": prompt_text}],
     temperature=0.7,
     max_tokens=200)
@@ -240,7 +240,7 @@ def update_clusters():
         except:
             old_data_dict = {}
         
-        old_data_dict["cluster_label"] = label  # 加一個 cluster_label
+        old_data_dict["cluster_label"] = label  
         new_data_str = json.dumps(old_data_dict, ensure_ascii=False)
         
         cursor.execute("UPDATE user_interactions SET data=? WHERE id=?", (new_data_str, uid))
@@ -248,7 +248,6 @@ def update_clusters():
     conn.commit()
     conn.close()
     
-    # 回傳整個 cluster_labels 讓我們可以在呼叫完之後檢查
     return cluster_labels
 
 
@@ -260,46 +259,30 @@ def update_recommendation():
 @app.route("/get_practice", methods=["POST"])
 def get_practice():
     data = request.get_json()
-    user_level = data.get("user_level", "Entry")
+    user_level = data.get("user_level", "")
     user_learningstyle = data.get("user_learningstyle", "")
-    
-    # 1. 先根據 level & learningstyle 找到 cluster_label (這裡做法很多，示範簡單做法)
-    #    - 做法A: 直接再跑一次 kmeans.predict(...) 
-    #    - 做法B: 先在 update_clusters() 時，已經存入 user_interactions 的 cluster_label，再根據 user_id 撈回
-    # 這裡範例：臨時做法A：從記憶體/或現算
-    
-    # ------------- 簡易做法：直接臨時 predict -------------
-    #   a. 把 user_level, user_learningstyle => 跟之前做法同樣的向量化 => kmeans.predict()
-    #   b. 需要先保存 kmeans 物件與 vectorizer 物件(全域或 Singleton)。這裡示範做一個全域參考
-    # -----------------------------------------------------
-    
-    # 假設您已在 update_clusters() 最後保存了 kmeans 與 vectorizer 為全域變數:
-    # e.g. global_kmeans, global_vectorizer, level_map
-    # 在這裡我們可以做： cluster_label = global_kmeans.predict(該使用者向量)
-    
-    # 這裡為了教學先寫死 cluster_label = 0 ~ 2
-    # 您實務上要真的讀 DB 或全域變數來做
-    cluster_label = 0  # 預設0, 依實際需求改
-    
-    # 2. 根據 cluster_label 決定 prompt
-    #    您可以針對不同群體做不同的教學要求
+    user_instructor_preference = data.get("user_instructor_preference", "")
+    user_question = data.get("user_question", "")
+    cluster_label = 0  
     practice_prompt_text = ""
     
     if cluster_label == 0:
         practice_prompt_text = f"""
-You are a tutor. The user is an Entry-level English learner who prefers {user_learningstyle}.
-Please provide a short practice passage or exercise (~200 words) that includes basic vocabulary and grammar.
+You are an English learning material creator. The user is an Entry-level English learner who prefers {user_learningstyle}.
+Please provide a short real learning material not just learning suggestions which meets {user_instructor_preference}  or exercise (~200 words). If the material is about videos, please provide the material link (e.g., 'https://youtu.be/fake1234') and all need  to solve {user_question}.
 It should be easy to follow.
 """
     elif cluster_label == 1:
         practice_prompt_text = f"""
-You are a tutor. The user is a Middle-level English learner who prefers {user_learningstyle}.
-Please provide a practice passage (~200 words) with moderate complexity, some new vocabulary and reading comprehension questions.
+You are an English learning material creator. The user is a Middle-level English learner who prefers {user_learningstyle}.
+Please provide a short real learning material not just learning suggestions which meets {user_instructor_preference} (~200 words) with moderate complexity, some new vocabulary and reading comprehension questions..
+If the material is about videos, please provide the material link (e.g., 'https://youtu.be/fake1234') and all need  to solve {user_question}
 """
     else:
         practice_prompt_text = f"""
-You are a tutor. The user is an Advanced-level English learner who prefers {user_learningstyle}.
-Please provide a challenging practice text (~200 words) with advanced vocabulary, critical thinking questions, or creative writing tasks.
+You are an English learning material creator. The user is an Advanced-level English learner who prefers {user_learningstyle}.
+Please provide  a short real learning material not just learning suggestions which meets {user_instructor_preference} (~200 words) with advanced vocabulary, critical thinking questions, or creative writing tasks to solve {user_question}.
+If the material is about videos, please provide the material link (e.g., 'https://youtu.be/fake1234')
 """
     
     # 3. 呼叫 OpenAI 產生

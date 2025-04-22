@@ -10,7 +10,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 
 
-# 初始化資料庫
+# init database
 def init_db():
     conn = sqlite3.connect('user_data.db')
     cursor = conn.cursor()
@@ -25,13 +25,14 @@ def init_db():
     conn.commit()
     conn.close()
 
-# 呼叫初始化函式
+
 init_db()
 
-
 import os
-api_key = os.environ.get("OPEN_API_KEY", "").strip()
+#init client
+api_key = os.getenv("OPENAI_API_KEY", "").strip()
 client = OpenAI(api_key=api_key)
+
 
 
 from flask import Flask, request, jsonify
@@ -42,7 +43,7 @@ app = Flask(__name__)
 #     app.run(debug=True, port=5001)
 
 
-# 讀取 lesson.json (請確保 lesson.json 與 app.py 在同一目錄)
+# 讀取 lesson.json
 with open('lessons.json', 'r', encoding='utf-8') as f:
     lesson_data = json.load(f)
 
@@ -128,7 +129,7 @@ def get_advice():
     data = request.get_json()  
     user_question = data.get("user_question", "I want to improve my English grammar.")
     user_learningstyle = data.get("user_learningstyle", "prefer and watch videos.")
-    user_instructor_preference = data.get("user_instructor_preference", "alsway use positive words to encourage students.")
+    user_instructor_preference = data.get("user_instructor_preference", "always use positive words to encourage students.")
     user_language = data.get("user_language","traditional Chinese")
     user_level = data.get("user_level", "entry")
     score = data.get("score", "0")

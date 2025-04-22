@@ -1,7 +1,7 @@
 {
     "quiz": [
         {
-            "question": "My　　　hurts so much that I cannot even turn my head",
+            "question": "My ______ hurts so much that I cannot even turn my head",
             "options": ["arm ", "desk"],
             "answer": "arm"
         },

@@ -43,23 +43,23 @@ app = Flask(__name__)
 #     app.run(debug=True, port=5001)
 
 
-# 讀取 lesson.json
+# read lesson.json
 with open('lessons.json', 'r', encoding='utf-8') as f:
     lesson_data = json.load(f)
 
-# 提供 quiz 資料的 API
+# provide quiz data API
 @app.route("/get_quiz", methods=["GET"])
 def get_quiz():
     quiz = lesson_data.get("quiz", [])
     return jsonify({"quiz": quiz})
 
-# 新增 /take_quiz API (這個端點用來處理測驗答案)
+# add /take_quiz API (for test result)
 @app.route("/take_quiz", methods=["POST"])
 def take_quiz():
     data = request.get_json()
     user_answers = data.get("answers", [])
     
-    # 從 lesson_data 讀取 quiz 題目
+    # read  quiz questions from lesson_data 
     quiz = lesson_data.get("quiz", [])
     score = 0
     for i, item in enumerate(quiz):
@@ -68,7 +68,7 @@ def take_quiz():
             score += 1
 
     quiz_count = len(quiz)
-    # 計算使用者的程度，根據正確率來判斷
+    # according to corection rate to decide the user language level
     if quiz_count > 0:
         ratio = score / quiz_count
         if ratio < 0.5:
@@ -86,21 +86,21 @@ def take_quiz():
 def log_interaction():
     data = request.get_json()
     action_type = data.get("action_type", "unknown")
-    details = data.get("data", {})  # 這裡 data 欄位存放詳細資訊
-     # 將你需要記錄的欄位全部放到 details 這個 dict 中
+    details = data.get("data", {})  # here data to save detail
+     # save all the records in details 
     details = {
         "user_question": details.get("user_question", ""),
         "user_learningstyle": details.get("user_learningstyle", ""),
         "user_instructor_preference": details.get("user_instructor_preference", ""),
         "user_language": details.get("user_language", ""),
-        "answers": details.get("answers", ""),  # 注意 key 要跟前端送的一致
+        "answers": details.get("answers", ""),  
         "level": details.get("user_level", ""),
         "score": details.get("score", "")
     }   
-    # 取得當前時間
+    # retrieve time
     timestamp = datetime.utcnow().isoformat()
 
-    # 儲存到 SQLite
+    # save in SQLite
     conn = sqlite3.connect('user_data.db')
     cursor = conn.cursor()
     cursor.execute('''
@@ -114,16 +114,16 @@ def log_interaction():
 
 
 
-# 基本路由測試 (確保伺服器能運行)
+# router test
 @app.route("/")
 def home_page():
     return render_template("index.html")
-# 在開頭讀取 lessons.json
+# get lessons.json
 with open("lessons.json", "r", encoding="utf-8") as f:
     lessons_data = json.load(f)
 
 
-# 取得個人化學習建議的 API
+# get personal sugesstion API
 @app.route("/get_advice", methods=["POST"])
 def get_advice():
     data = request.get_json()  
@@ -136,7 +136,7 @@ def get_advice():
 
 
 
-    # 在這裡定義最簡單的 Prompt
+    # GPT Prompt
     prompt_text = f"""
 You are the worldclass language tutor for a student with {user_level} language proficiency.
 The student has this concern or question: {user_question}
@@ -154,10 +154,10 @@ please list your reply or even with emojis.
     temperature=0.7,
     max_tokens=200)
 
-    # 擷取回傳內容
+    # retrieve response
     advice = response.choices[0].message.content.strip()
 
-    # 以 JSON 格式返回傳使用者的分級(如果有 quiz 資料)、分數(可選) 與 AI 建議
+    
     return jsonify({
         "level": user_level,
         "score": score,
@@ -169,7 +169,7 @@ def update_clusters():
     conn = sqlite3.connect('user_data.db')
     cursor = conn.cursor()
     
-    # 1. 讀取所有互動紀錄
+    # 1. read all interaction records
     cursor.execute("SELECT id, data FROM user_interactions")
     rows = cursor.fetchall()
     
@@ -181,13 +181,13 @@ def update_clusters():
         record_id = row[0]
         data_json_str = row[1]
         
-        # 解析 JSON
+        # parse JSON
         try:
             data_dict = json.loads(data_json_str)
         except:
-            continue  # 如果解析失敗就跳過
+            continue  
         
-        # 取得 level & user_learningstyle
+        # get level & user_learningstyle
         level = data_dict.get("level", "Entry")
         user_learningstyle = data_dict.get("user_learningstyle", "")
         
@@ -195,16 +195,15 @@ def update_clusters():
         levels.append(level)
         learning_styles.append(user_learningstyle)
     
-    # 如果資料不足，直接跳過
     if len(user_ids) < 2:
         conn.close()
         return []
     
-    # 2. 將 level 做簡單編碼
+    # 2. code level 
     level_map = {"Entry": 0, "Middle": 1, "Advanced": 2}
     level_encoded = [level_map.get(lv, 0) for lv in levels]
     
-    # 3. 用 TfidfVectorizer 將 learning_style 轉成向量
+    # 3. use TfidfVectorizer turn learning_style to vector
     vectorizer = TfidfVectorizer(stop_words='english')
     learningstyle_tfidf = vectorizer.fit_transform(learning_styles)  # shape = (n_samples, n_features)
     
@@ -215,12 +214,12 @@ def update_clusters():
     from scipy.sparse import hstack
     X = hstack([learningstyle_tfidf, level_encoded_np])  # shape = (n_samples, n_features+1)
     
-    # 5. 使用 KMeans 分群，例如 k=3
+    # 5. use KMeans to group ，eg: k=3
     k = 3
     kmeans = KMeans(n_clusters=k, random_state=42)
     kmeans.fit(X)
     
-    # 取得分群標籤
+    # get group label
     cluster_labels = kmeans.labels_  # 長度 = n_samples
     
     # 6.（可選）將 cluster_label 更新回 DB
@@ -229,7 +228,7 @@ def update_clusters():
     for i, uid in enumerate(user_ids):
         label = int(cluster_labels[i])
         
-        # 先把該 id 的 data 取出
+        # extract  data id
         cursor.execute("SELECT data FROM user_interactions WHERE id=?", (uid,))
         row = cursor.fetchone()
         if not row:
@@ -286,9 +285,9 @@ Please provide  a short real learning material not just learning suggestions whi
 If the material is about videos, please provide the material link (e.g., 'https://youtu.be/fake1234')
 """
     
-    # 3. 呼叫 OpenAI 產生
+    # 3. call OpenAI 
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",  # 或 gpt-4, 取決於您有哪個可用
+        model="gpt-3.5-turbo", 
         messages=[{"role": "system", "content": "You are an English teacher."},
                   {"role": "user", "content": practice_prompt_text}],
         temperature=0.7,
